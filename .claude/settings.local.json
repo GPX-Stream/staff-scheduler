@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(cmd /c \"cd /d \"\"C:\\\\Users\\\\aianc\\\\GPX Lab Dropbox\\\\Andrei Iancu\\\\Development\\\\staff-scheduler\"\" && mkdir src 2>nul & move \"\"staff-scheduler.jsx\"\" \"\"src\\\\StaffScheduler.jsx\"\"\")"
-    ]
-  }
-}

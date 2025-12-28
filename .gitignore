@@ -8,12 +8,22 @@ dist/
 .env
 .env.local
 .env.*.local
+.env*
+
+# Claude Code local files
+.claude/
+
+# Local notes
+todo.md
+users.txt
+*.pdf
 
 # Editor directories
 .idea/
 .vscode/
 *.swp
 *.swo
+nul
 
 # OS files
 .DS_Store
@@ -25,6 +35,3 @@ npm-debug.log*
 
 # Local Vercel config
 .vercel
-
-.vercel
-.env*.local
