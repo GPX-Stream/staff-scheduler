@@ -35,29 +35,13 @@ export default async function handler(req, res) {
       });
     }
 
-    // Parse users config from environment
-    const usersConfig = process.env.USERS_CONFIG;
-    if (!usersConfig) {
-      return res.status(500).json({
-        success: false,
-        error: 'USERS_CONFIG not configured',
-      });
-    }
-
-    let users;
-    try {
-      users = JSON.parse(usersConfig);
-    } catch {
-      return res.status(500).json({
-        success: false,
-        error: 'Invalid USERS_CONFIG JSON',
-      });
-    }
+    // Get users from request body
+    const { users } = req.body;
 
     if (!Array.isArray(users) || users.length === 0) {
-      return res.status(500).json({
+      return res.status(400).json({
         success: false,
-        error: 'USERS_CONFIG must be a non-empty array',
+        error: 'Request body must contain a non-empty "users" array',
       });
     }
 
