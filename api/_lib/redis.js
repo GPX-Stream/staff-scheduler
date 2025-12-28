@@ -61,11 +61,6 @@ export const DEFAULT_CONFIG = {
     { name: 'orange', bg: 'bg-orange-500', light: 'bg-orange-100', border: 'border-orange-500', text: 'text-orange-700', hex: '#f97316' },
     { name: 'indigo', bg: 'bg-indigo-500', light: 'bg-indigo-100', border: 'border-indigo-500', text: 'text-indigo-700', hex: '#6366f1' },
   ],
-  shiftPatterns: {
-    all: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-    weekdays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-    noSunday: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-  },
   roles: [
     { id: 'admin', label: 'Admin', color: 'blue' },
     { id: 'tier1', label: 'Support - Tier 1', color: 'green' },

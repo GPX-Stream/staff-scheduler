@@ -3,6 +3,7 @@ import { DAYS, HOURS } from '../constants';
 import { formatHour } from '../utils';
 import { displayToUTC, getTimezoneLabel } from '../utils';
 import { ScheduleCell } from './ScheduleCell';
+import { normalizeBlockValue } from '../utils/blockUtils';
 
 // Get current time in the display timezone
 const getCurrentTimeInTimezone = (timezoneId) => {
@@ -78,19 +79,25 @@ export const ScheduleGrid = ({
   };
 
   // Get all staff members who have a shift at this display position (excluding hidden staff/roles)
+  // Returns multiple entries per staff when they have multiple roles assigned
   const getCellContent = (dayIndex, hour) => {
     const utcHour = displayToUTC(dayIndex, hour, displayTimezone);
-    return staff
-      .map(s => {
-        const blockValue = blocks[`${s.id}-${utcHour}`];
-        if (!blockValue || hiddenStaff.has(s.id)) return null;
-        const role = blockValue === true ? (s.defaultRole || 'tier1') : blockValue;
-        if (hiddenRoles.has(`${s.id}-${role}`)) return null;
-        if (hiddenGlobalRoles.has(role)) return null;
-        return { ...s, role };
-      })
-      .filter(Boolean)
-      .sort((a, b) => getRoleSort(a.role) - getRoleSort(b.role));
+    const results = [];
+
+    staff.forEach(s => {
+      const blockValue = blocks[`${s.id}-${utcHour}`];
+      if (!blockValue || hiddenStaff.has(s.id)) return;
+
+      const staffRoles = normalizeBlockValue(blockValue, s.defaultRole || 'tier1');
+
+      staffRoles.forEach(role => {
+        if (hiddenRoles.has(`${s.id}-${role}`)) return;
+        if (hiddenGlobalRoles.has(role)) return;
+        results.push({ ...s, role });
+      });
+    });
+
+    return results.sort((a, b) => getRoleSort(a.role) - getRoleSort(b.role));
   };
 
   // Calculate time line position as percentage through the hour
@@ -102,11 +109,6 @@ export const ScheduleGrid = ({
       {isMobile ? (
         // Mobile layout: each day as a separate section
         <div className="schedule-grid-mobile h-full overflow-auto">
-        {/* Timezone header */}
-        <div className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
-          {getTimezoneLabel(displayTimezone, timezones)}
-        </div>
-
         {/* Each day as a collapsible section */}
         {DAYS.map((day, dayIndex) => {
           const isToday = dayIndex === currentTime.dayIndex;
@@ -115,7 +117,7 @@ export const ScheduleGrid = ({
             <div key={day} className="schedule-mobile-day border-b border-slate-200 dark:border-slate-700">
               {/* Day header */}
               <div
-                className={`sticky top-8 z-10 px-4 py-3 text-sm uppercase tracking-wider ${
+                className={`sticky top-0 z-10 px-4 py-3 text-sm uppercase tracking-wider ${
                   isToday
                     ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 font-bold'
                     : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold'

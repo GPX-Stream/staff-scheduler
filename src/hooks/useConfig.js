@@ -82,7 +82,6 @@ export const useConfig = () => {
     coverage: config?.coverage,
     timezones: config?.timezones,
     colors: config?.colors,
-    shiftPatterns: config?.shiftPatterns,
     roles: config?.roles,
   };
 };

@@ -35,7 +35,7 @@ export default async function handler(req, res) {
       },
       timezones: Array.isArray(config.timezones) ? config.timezones : DEFAULT_CONFIG.timezones,
       colors: Array.isArray(config.colors) ? config.colors : DEFAULT_CONFIG.colors,
-      shiftPatterns: typeof config.shiftPatterns === 'object' ? config.shiftPatterns : DEFAULT_CONFIG.shiftPatterns,
+      roles: Array.isArray(config.roles) ? config.roles : DEFAULT_CONFIG.roles,
     };
 
     await redis.set(CONFIG_KEYS.CONFIG, validatedConfig);

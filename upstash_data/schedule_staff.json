@@ -2,7 +2,9 @@
   {
     "id": 1,
     "name": "Jin N.",
+    "username": "jinn",
     "color": {
+      "name": "blue",
       "bg": "bg-blue-500",
       "light": "bg-blue-100",
       "border": "border-blue-500",
@@ -15,7 +17,9 @@
   {
     "id": 2,
     "name": "Dane B.",
+    "username": "daneb",
     "color": {
+      "name": "emerald",
       "bg": "bg-emerald-500",
       "light": "bg-emerald-100",
       "border": "border-emerald-500",
@@ -28,7 +32,9 @@
   {
     "id": 3,
     "name": "Jaxon B.",
+    "username": "jaxonb",
     "color": {
+      "name": "violet",
       "bg": "bg-violet-500",
       "light": "bg-violet-100",
       "border": "border-violet-500",
@@ -41,7 +47,9 @@
   {
     "id": 4,
     "name": "Greg C.",
+    "username": "gregc",
     "color": {
+      "name": "amber",
       "bg": "bg-amber-500",
       "light": "bg-amber-100",
       "border": "border-amber-500",
@@ -54,7 +62,9 @@
   {
     "id": 5,
     "name": "Andy I.",
+    "username": "andyi",
     "color": {
+      "name": "rose",
       "bg": "bg-rose-500",
       "light": "bg-rose-100",
       "border": "border-rose-500",
@@ -67,7 +77,9 @@
   {
     "id": 6,
     "name": "Alexx B.",
+    "username": "alexxb",
     "color": {
+      "name": "cyan",
       "bg": "bg-cyan-500",
       "light": "bg-cyan-100",
       "border": "border-cyan-500",
@@ -80,7 +92,9 @@
   {
     "id": 7,
     "name": "Jeff S.",
+    "username": "jeffs",
     "color": {
+      "name": "orange",
       "bg": "bg-orange-500",
       "light": "bg-orange-100",
       "border": "border-orange-500",
@@ -89,5 +103,20 @@
     },
     "timezone": "America/New_York",
     "defaultRole": "admin"
+  },
+  {
+    "id": 8,
+    "name": "Carlos M.",
+    "username": "carlosm",
+    "color": {
+      "name": "indigo",
+      "bg": "bg-indigo-500",
+      "light": "bg-indigo-100",
+      "border": "border-indigo-500",
+      "text": "text-indigo-700",
+      "hex": "#6366f1"
+    },
+    "timezone": "America/New_York",
+    "defaultRole": "fulfillment"
   }
 ]

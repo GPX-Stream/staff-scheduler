@@ -65,7 +65,7 @@ export const ScheduleCell = memo(({
         const roleColorHex = getRoleColorHex(roles, s.role);
         return (
           <div
-            key={s.id}
+            key={`${s.id}-${s.role}`}
             className="staff-pill text-[11px] leading-tight px-1.5 py-0.5 rounded font-medium flex items-center gap-1 min-w-[75px] max-w-[50%]"
             style={{
               backgroundColor: `${roleColorHex}80`, // 50% opacity

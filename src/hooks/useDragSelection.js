@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { displayToUTC } from '../utils';
+import { blockHasRole } from '../utils/blockUtils';
 
 /**
  * Hook to manage drag selection for the schedule grid
@@ -37,10 +38,12 @@ export const useDragSelection = ({
     const startHour = Math.min(dragStart.hour, dragEnd.hour);
     const endHour = Math.max(dragStart.hour, dragEnd.hour);
 
-    // Check if we're removing (if start cell already has this staff)
+    // Check if we're removing (if start cell already has the SELECTED ROLE)
     const startUTC = displayToUTC(dragStart.dayIndex, dragStart.hour, displayTimezone);
     const startKey = `${selectedStaff.id}-${startUTC}`;
-    const isRemoving = !!blocks[startKey];
+    const defaultRole = selectedStaff.defaultRole || 'tier1';
+    const roleToCheck = selectedRole || defaultRole;
+    const isRemoving = blockHasRole(blocks[startKey], roleToCheck, defaultRole);
 
     const updates = [];
     for (let dayIdx = startDayIdx; dayIdx <= endDayIdx; dayIdx++) {
@@ -49,8 +52,9 @@ export const useDragSelection = ({
       }
     }
 
-    // Pass selectedRole when adding blocks (ignored when removing)
-    updateBlocks(updates, displayTimezone, isRemoving, isRemoving ? undefined : selectedRole);
+    // Pass role and selectedStaff for multi-role support
+    // When removing, pass the role to remove; when adding, pass the role to add
+    updateBlocks(updates, displayTimezone, isRemoving, roleToCheck, selectedStaff);
 
     setIsDragging(false);
     setDragStart(null);

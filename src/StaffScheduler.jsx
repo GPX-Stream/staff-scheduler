@@ -5,12 +5,14 @@ import { TimezoneSelector } from './components/TimezoneSelector';
 import { StaffList } from './components/StaffList';
 import { ScheduleGrid } from './components/ScheduleGrid';
 import { CoverageSummary } from './components/CoverageSummary';
+import { AdminPanel } from './components/AdminPanel';
 import { exportToPDF } from './services/pdfExport';
 
 export default function StaffScheduler({ user, isAdmin, onLogout }) {
   // Non-admins can never edit
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedRole, setSelectedRole] = useState('tier1');
+  const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     // Check localStorage or system preference
     const saved = localStorage.getItem('darkMode');
@@ -26,7 +28,7 @@ export default function StaffScheduler({ user, isAdmin, onLogout }) {
   }, [darkMode]);
 
   // App configuration from database
-  const { config, roles, isLoading: isConfigLoading, error: configError } = useConfig();
+  const { config, roles, isLoading: isConfigLoading, error: configError, saveConfig } = useConfig();
 
   // Core sync hook - single source of truth
   const {
@@ -160,6 +162,7 @@ export default function StaffScheduler({ user, isAdmin, onLogout }) {
           syncStatus={{ isOnline, isSaving, syncError, hasConflict, hasUnsavedChanges }}
           darkMode={darkMode}
           onToggleDarkMode={() => setDarkMode(prev => !prev)}
+          onOpenAdmin={canEdit ? () => setIsAdminPanelOpen(true) : undefined}
         />
       </div>
 
@@ -230,6 +233,16 @@ export default function StaffScheduler({ user, isAdmin, onLogout }) {
           />
         </div>
       </div>
+
+      {/* Admin Panel Modal */}
+      <AdminPanel
+        isOpen={isAdminPanelOpen}
+        onClose={() => setIsAdminPanelOpen(false)}
+        config={config}
+        saveConfig={saveConfig}
+        onRefreshData={refreshFromServer}
+        currentUser={user}
+      />
     </div>
   );
 }
