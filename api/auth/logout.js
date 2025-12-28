@@ -1,4 +1,4 @@
-import { deleteSession } from '../_lib/auth.js';
+import { clearSessionByToken } from '../_lib/auth.js';
 
 export default async function handler(req, res) {
   // Only allow POST
@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     const token = authHeader?.replace('Bearer ', '');
 
     if (token) {
-      await deleteSession(token);
+      await clearSessionByToken(token);
     }
 
     return res.status(200).json({ success: true });

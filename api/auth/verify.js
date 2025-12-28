@@ -1,4 +1,4 @@
-import { getSession } from '../_lib/auth.js';
+import { findUserByToken } from '../_lib/auth.js';
 
 export default async function handler(req, res) {
   // Only allow GET
@@ -15,18 +15,18 @@ export default async function handler(req, res) {
       return res.status(200).json({ valid: false });
     }
 
-    const session = await getSession(token);
+    const user = await findUserByToken(token);
 
-    if (!session) {
+    if (!user) {
       return res.status(200).json({ valid: false });
     }
 
     return res.status(200).json({
       valid: true,
       user: {
-        username: session.username,
-        displayName: session.displayName,
-        role: session.role,
+        username: user.username,
+        displayName: user.displayName,
+        role: user.role,
       },
     });
   } catch (error) {

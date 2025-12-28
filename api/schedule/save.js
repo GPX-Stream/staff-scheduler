@@ -1,5 +1,5 @@
 import { redis, KEYS } from '../_lib/redis.js';
-import { getSession } from '../_lib/auth.js';
+import { findUserByToken } from '../_lib/auth.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -15,13 +15,13 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    const session = await getSession(token);
-    if (!session) {
+    const user = await findUserByToken(token);
+    if (!user) {
       return res.status(401).json({ error: 'Invalid or expired session' });
     }
 
     // Authorization check - only admins can save
-    if (session.role !== 'admin') {
+    if (user.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized to edit schedule' });
     }
 

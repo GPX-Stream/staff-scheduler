@@ -13,8 +13,7 @@ export const KEYS = {
   VERSION: 'schedule:version',
 };
 
-// Redis keys for authentication
+// Redis key for authentication (single object with all users)
 export const AUTH_KEYS = {
-  USER: (username) => `users:${username.toLowerCase()}`,
-  SESSION: (token) => `sessions:${token}`,
+  USERS: 'users',
 };

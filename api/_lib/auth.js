@@ -3,7 +3,6 @@ import crypto from 'crypto';
 import { redis, AUTH_KEYS } from './redis.js';
 
 const SALT_ROUNDS = 10;
-const SESSION_TTL = 7 * 24 * 60 * 60; // 7 days in seconds
 
 /**
  * Hash a password using bcrypt
@@ -27,92 +26,118 @@ export function generateToken() {
 }
 
 /**
- * Create a session in Redis
+ * Get all users from Redis
  */
-export async function createSession(token, user) {
-  const session = {
-    username: user.username,
-    displayName: user.displayName,
-    role: user.role,
-    createdAt: new Date().toISOString(),
-  };
+export async function getAllUsers() {
+  const data = await redis.get(AUTH_KEYS.USERS);
+  if (!data) return {};
 
-  await redis.set(AUTH_KEYS.SESSION(token), JSON.stringify(session), {
-    ex: SESSION_TTL,
-  });
-
-  return session;
-}
-
-/**
- * Get a session from Redis
- */
-export async function getSession(token) {
-  if (!token) return null;
-
-  const data = await redis.get(AUTH_KEYS.SESSION(token));
-  if (!data) return null;
-
-  // Handle both string and object responses from Redis
   if (typeof data === 'string') {
     try {
       return JSON.parse(data);
     } catch {
-      return null;
+      return {};
     }
   }
   return data;
 }
 
 /**
- * Delete a session from Redis
+ * Save all users to Redis
  */
-export async function deleteSession(token) {
-  if (!token) return false;
-  await redis.del(AUTH_KEYS.SESSION(token));
-  return true;
+export async function saveAllUsers(users) {
+  await redis.set(AUTH_KEYS.USERS, JSON.stringify(users));
 }
 
 /**
- * Get a user from Redis by username
+ * Get a user by username
  */
 export async function getUser(username) {
   if (!username) return null;
-
-  const data = await redis.get(AUTH_KEYS.USER(username));
-  if (!data) return null;
-
-  if (typeof data === 'string') {
-    try {
-      return JSON.parse(data);
-    } catch {
-      return null;
-    }
-  }
-  return data;
+  const users = await getAllUsers();
+  return users[username.toLowerCase()] || null;
 }
 
 /**
- * Create a user in Redis
+ * Create a user
  */
 export async function createUser(user) {
+  const users = await getAllUsers();
+  const username = user.username.toLowerCase();
+
   const userData = {
-    username: user.username.toLowerCase(),
+    username,
     displayName: user.displayName,
     passwordHash: await hashPassword(user.password),
     role: user.role,
     createdAt: new Date().toISOString(),
+    sessionToken: null,
   };
 
-  await redis.set(AUTH_KEYS.USER(user.username), JSON.stringify(userData));
+  users[username] = userData;
+  await saveAllUsers(users);
   return userData;
+}
+
+/**
+ * Update a user's fields
+ */
+export async function updateUser(username, updates) {
+  const users = await getAllUsers();
+  const key = username.toLowerCase();
+
+  if (!users[key]) return null;
+
+  users[key] = { ...users[key], ...updates };
+  await saveAllUsers(users);
+  return users[key];
+}
+
+/**
+ * Find a user by their session token
+ */
+export async function findUserByToken(token) {
+  if (!token) return null;
+
+  const users = await getAllUsers();
+  for (const username in users) {
+    if (users[username].sessionToken === token) {
+      return users[username];
+    }
+  }
+  return null;
+}
+
+/**
+ * Set a session token on a user
+ */
+export async function setUserSession(username, token) {
+  return updateUser(username, { sessionToken: token });
+}
+
+/**
+ * Clear a user's session token
+ */
+export async function clearUserSession(username) {
+  return updateUser(username, { sessionToken: null });
+}
+
+/**
+ * Clear session by token (finds user first)
+ */
+export async function clearSessionByToken(token) {
+  const user = await findUserByToken(token);
+  if (user) {
+    await clearUserSession(user.username);
+    return true;
+  }
+  return false;
 }
 
 /**
  * Check if any users exist in the system
  */
 export async function hasUsers() {
-  // Try to scan for any user keys
-  const result = await redis.scan(0, { match: 'users:*', count: 1 });
-  return result[1] && result[1].length > 0;
+  const users = await getAllUsers();
+  return Object.keys(users).length > 0;
 }

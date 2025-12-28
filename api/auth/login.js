@@ -1,4 +1,4 @@
-import { getUser, verifyPassword, generateToken, createSession } from '../_lib/auth.js';
+import { getUser, verifyPassword, generateToken, setUserSession } from '../_lib/auth.js';
 
 export default async function handler(req, res) {
   // Only allow POST
@@ -35,17 +35,17 @@ export default async function handler(req, res) {
       });
     }
 
-    // Create session
+    // Generate and store session token on user
     const token = generateToken();
-    const session = await createSession(token, user);
+    await setUserSession(username, token);
 
     return res.status(200).json({
       success: true,
       token,
       user: {
-        username: session.username,
-        displayName: session.displayName,
-        role: session.role,
+        username: user.username,
+        displayName: user.displayName,
+        role: user.role,
       },
     });
   } catch (error) {
