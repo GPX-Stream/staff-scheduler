@@ -5,3 +5,252 @@
 html, body, #root {
   min-width: 375px;
 }
+
+/* Print styles - show only the schedule grid */
+@media print {
+  @page {
+    size: letter landscape;
+    margin: 5mm;
+  }
+
+  /* Force light color scheme */
+  html, html.dark {
+    color-scheme: light !important;
+  }
+
+  /* Hide everything by default */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Show only the schedule grid and its contents */
+  .schedule-grid,
+  .schedule-grid *,
+  .print-header,
+  .print-header * {
+    visibility: visible;
+  }
+
+  /* Hide the current time red line and dot */
+  .bg-red-500,
+  .border-red-400,
+  [class*="ring-red"] {
+    display: none !important;
+  }
+
+  /* Position the schedule grid to fill the page */
+  .schedule-grid {
+    position: absolute;
+    top: 18mm;
+    left: 0;
+    right: 0;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Print header for title/timezone - compact */
+  .print-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 2mm 0;
+  }
+
+  .print-header h1 {
+    font-size: 14px !important;
+    margin: 0 !important;
+  }
+
+  .print-header p {
+    font-size: 10px !important;
+    margin: 0 !important;
+  }
+
+  /* ===== COMPACT LAYOUT FOR SINGLE PAGE ===== */
+
+  /* Compact header row */
+  .schedule-header-row {
+    min-height: 0 !important;
+  }
+
+  .schedule-header-day {
+    padding: 2px 4px !important;
+    font-size: 9px !important;
+  }
+
+  /* Compact timezone corner to match hour label width */
+  .schedule-header-corner {
+    padding: 2px 3px !important;
+    font-size: 7px !important;
+    width: 35px !important;
+    min-width: 35px !important;
+    max-width: 35px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* Compact hour rows - fit content but stay compact */
+  .schedule-hour-row {
+    min-height: auto !important;
+    height: auto !important;
+    flex-grow: 0 !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Compact hour labels */
+  .schedule-hour-label {
+    padding: 1px 3px !important;
+    font-size: 8px !important;
+    width: 35px !important;
+    min-width: 35px !important;
+  }
+
+  /* Compact cells */
+  .schedule-cell {
+    padding: 1px !important;
+    gap: 1px !important;
+  }
+
+  /* Compact staff pills - single line */
+  .staff-pill {
+    font-size: 8px !important;
+    padding: 1px 4px !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    line-height: 1.2 !important;
+    flex-direction: row !important;
+    white-space: nowrap !important;
+  }
+
+  .staff-pill > div {
+    flex-direction: row !important;
+    gap: 3px !important;
+  }
+
+  .staff-pill span:first-child {
+    font-size: 8px !important;
+  }
+
+  .staff-pill span:last-child {
+    font-size: 7px !important;
+    display: inline !important;
+  }
+
+  .staff-pill span:last-child::before {
+    content: "- ";
+  }
+
+  /* ===== FORCE LIGHT MODE COLORS ===== */
+
+  /* Base backgrounds white */
+  .dark .bg-slate-800,
+  .bg-slate-800,
+  .dark .bg-slate-700,
+  .bg-slate-700,
+  .dark .bg-slate-50,
+  .bg-slate-50,
+  .dark .bg-blue-900\/30,
+  .bg-blue-900\/30,
+  .dark .bg-blue-900\/20,
+  .bg-blue-900\/20,
+  .bg-blue-100,
+  .bg-blue-50\/50,
+  .bg-white { background-color: #ffffff !important; }
+
+  /* Alternate day/hour shading - light gray bands */
+  .dark .bg-slate-700\/50,
+  .bg-slate-700\/50,
+  .dark .bg-slate-100,
+  .bg-slate-100,
+  .dark .bg-slate-100\/50,
+  .bg-slate-100\/50,
+  .dark .bg-blue-800\/40,
+  .bg-blue-800\/40,
+  .bg-blue-200\/70 { background-color: #f1f5f9 !important; }
+
+  /* Day headers - black text */
+  .schedule-header-day,
+  .schedule-header-corner {
+    color: #000000 !important;
+    font-weight: 700 !important;
+  }
+
+  /* Hour labels - black text */
+  .schedule-hour-label {
+    color: #000000 !important;
+  }
+
+  /* Coverage hour labels - bold */
+  .schedule-hour-label.bg-blue-100,
+  .schedule-hour-label[class*="bg-blue"] {
+    font-weight: 700 !important;
+  }
+
+  /* All text should be dark/black */
+  .dark .text-slate-100,
+  .text-slate-100,
+  .dark .text-slate-200,
+  .text-slate-200,
+  .dark .text-slate-300,
+  .text-slate-300,
+  .dark .text-slate-400,
+  .text-slate-400,
+  .dark .text-slate-500,
+  .text-slate-500,
+  .dark .text-slate-600,
+  .text-slate-600 { color: #000000 !important; }
+
+  .dark .text-blue-200,
+  .text-blue-200,
+  .dark .text-blue-300,
+  .text-blue-300,
+  .dark .text-blue-700,
+  .text-blue-700 { color: #000000 !important; }
+
+  /* Border colors - light */
+  .dark .border-slate-700,
+  .border-slate-700 { border-color: #e2e8f0 !important; }
+
+  .dark .divide-slate-700 > * + *,
+  .divide-slate-700 > * + * { border-color: #e2e8f0 !important; }
+
+  .dark .divide-slate-100 > * + *,
+  .divide-slate-100 > * + * { border-color: #f1f5f9 !important; }
+
+  /* Staff pill text - always dark */
+  .staff-pill,
+  .staff-pill * {
+    color: #1e293b !important;
+  }
+
+  .staff-pill span:last-child {
+    color: #334155 !important;
+  }
+
+  /* ===== PRINT COLOR ACCURACY ===== */
+  .staff-pill,
+  .schedule-cell,
+  .schedule-header-row,
+  .schedule-header-day,
+  .schedule-header-corner,
+  .schedule-hour-label,
+  .schedule-hour-row {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Hide interactive elements styling */
+  button,
+  .cursor-pointer {
+    cursor: default !important;
+  }
+
+  /* Ensure all rows are visible */
+  .schedule-hour-row {
+    break-inside: avoid;
+  }
+}

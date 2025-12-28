@@ -144,6 +144,7 @@ export const useStaffManager = ({ staff, setStaff, removeStaffBlocks, colors, ti
     selectedStaff,
     setSelectedStaff: selectStaffMember,
     hiddenStaff,
+    setHiddenStaff,
     hiddenRoles,
     hiddenGlobalRoles,
     displayTimezone,

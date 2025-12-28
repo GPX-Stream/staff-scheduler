@@ -6,7 +6,7 @@ A web application for planning weekly staff coverage across multiple timezones.
 
 ## What is Staff Scheduler?
 
-Staff Scheduler helps teams coordinate who is working when. It handles the complexity of scheduling across different timezones, automatically adjusting for daylight saving time changes.
+Staff Scheduler helps teams coordinate who is working when. It handles the complexity of scheduling across different timezones.
 
 **Key capabilities:**
 - Schedule staff across a 7-day week with hourly granularity
@@ -26,7 +26,7 @@ Staff Scheduler helps teams coordinate who is working when. It handles the compl
 2. Enter your username and password
 3. Click **Sign In**
 
-Your session lasts until you close the browser. To stay logged in, keep the tab open.
+Your session persists across browser restarts. You'll stay logged in until you click Logout.
 
 ### First-Time Setup
 
@@ -64,7 +64,8 @@ The schedule grid displays times in your selected timezone:
 ### Mobile View
 
 On phones and tablets, the schedule displays as collapsible day sections:
-- Tap a day header to expand/collapse
+- **Tap a day header** to collapse/expand that day's hours
+- Collapsed days show a chevron icon (►), expanded show (▼)
 - Swipe to scroll through hours
 - All features work the same as desktop
 
@@ -122,16 +123,20 @@ When items are hidden, a **"Show all (X hidden)"** button appears. Click it to r
 
 ---
 
-## Exporting to PDF
+## Printing the Schedule
 
-1. Click **Export PDF** in the header
-2. A PDF downloads automatically
-3. Open it for printing or sharing
+1. Click **Print** in the header
+2. Choose a print option:
+   - **All Users** - prints the full schedule for everyone
+   - **My Schedule Only** - prints only your shifts (temporarily hides others)
+3. The browser print dialog opens
+4. Choose your printer or "Save as PDF" to download
 
-The PDF includes:
-- The full week schedule
-- Staff color legend
-- Only visible staff/roles (respects your filter settings)
+The printout includes:
+- The schedule grid exactly as shown on screen
+- Role colors and staff names (matching what you see)
+- Only visible staff/roles (respects your filter settings from Coverage Summary)
+- Always prints in light mode for better readability
 
 ---
 
@@ -325,14 +330,15 @@ Define roles that can be assigned to shifts:
 - Click Cancel to reload the latest version
 - Re-apply your changes and save again
 
-### PDF export is blank or missing staff
+### Print is blank or missing staff
 - Check your visibility filters in Coverage Summary
-- Hidden staff/roles are excluded from the PDF
-- Click "Show all" before exporting
+- Hidden staff/roles won't appear in the printout
+- Click "Show all" before printing to include everyone
 
 ### Mobile: Can't scroll the grid
-- Use two fingers to scroll
-- Tap a day header to expand/collapse
+- Use one finger to scroll through hours vertically
+- Tap a day header to collapse it and reduce scrolling
+- All days start expanded by default
 
 ---
 

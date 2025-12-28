@@ -8,7 +8,7 @@ Technical documentation for developing and maintaining the Staff Scheduler appli
 |-------|------------|
 | Frontend | React 18, Vite, Tailwind CSS |
 | Icons | lucide-react |
-| PDF Export | jsPDF (dynamic import) |
+| Print | CSS @media print (browser native) |
 | Backend | Vercel Serverless Functions |
 | Database | Upstash Redis |
 | Auth | bcryptjs (password hashing) |
@@ -104,8 +104,7 @@ staff-scheduler/
 │   │   └── useDragSelection.js   # Drag-to-select interaction
 │   │
 │   ├── services/
-│   │   ├── api.js                # Schedule API client
-│   │   └── pdfExport.js          # PDF generation
+│   │   └── api.js                # Schedule API client
 │   │
 │   ├── utils/
 │   │   ├── timezone.js           # DST-aware timezone conversion
@@ -225,7 +224,7 @@ Client                          Server
   │  ◀─────────────────────────   │
   │  { token, user }              │
   │                               │
-  │  Store in sessionStorage      │
+  │  Store in localStorage        │
   │                               │
 ```
 
@@ -233,7 +232,7 @@ Client                          Server
 
 ```javascript
 // On app load
-const token = sessionStorage.getItem('staff-scheduler-token');
+const token = localStorage.getItem('staff-scheduler-token');
 if (token) {
   const { valid, user } = await fetch('/api/auth/verify', {
     headers: { Authorization: `Bearer ${token}` }
@@ -243,7 +242,7 @@ if (token) {
 
 ### Token Storage
 
-- **Client:** `sessionStorage['staff-scheduler-token']` (cleared on browser close)
+- **Client:** `localStorage['staff-scheduler-token']` (persists across browser sessions)
 - **Server:** `users[username].sessionToken` in Redis
 
 ---
@@ -773,7 +772,7 @@ try {
 
 - Passwords: bcrypt with 10 salt rounds
 - Tokens: 256-bit cryptographically random hex
-- Session storage: `sessionStorage` (not `localStorage`)
+- Token storage: `localStorage` (persists across browser sessions)
 - Admin validation: Server-side on every protected endpoint
 - Setup endpoints: Protected by separate `ADMIN_SETUP_KEY`
 - Self-deletion: Prevented at API level

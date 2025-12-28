@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { DAYS, HOURS } from '../constants';
 import { formatHour } from '../utils';
 import { displayToUTC, getTimezoneLabel } from '../utils';
@@ -46,6 +47,21 @@ export const ScheduleGrid = ({
   // Track container width for responsive layout
   const containerRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Track collapsed days for mobile view (start with all expanded)
+  const [collapsedDays, setCollapsedDays] = useState(new Set());
+
+  const toggleDayCollapse = (dayIndex) => {
+    setCollapsedDays(prev => {
+      const next = new Set(prev);
+      if (next.has(dayIndex)) {
+        next.delete(dayIndex);
+      } else {
+        next.add(dayIndex);
+      }
+      return next;
+    });
+  };
 
   // Update current time every minute
   useEffect(() => {
@@ -106,28 +122,44 @@ export const ScheduleGrid = ({
   // Wrapper div for ResizeObserver
   return (
     <div ref={containerRef} className="h-full">
+      {/* Print header - only visible when printing */}
+      <div className="print-header hidden print:block text-center">
+        <h1 className="text-xl font-bold text-slate-800">Staff Schedule</h1>
+        <p className="text-sm text-slate-600">Timezone: {getTimezoneLabel(displayTimezone, timezones)}</p>
+      </div>
+
       {isMobile ? (
         // Mobile layout: each day as a separate section
         <div className="schedule-grid-mobile h-full overflow-auto">
         {/* Each day as a collapsible section */}
         {DAYS.map((day, dayIndex) => {
           const isToday = dayIndex === currentTime.dayIndex;
+          const isCollapsed = collapsedDays.has(dayIndex);
 
           return (
             <div key={day} className="schedule-mobile-day border-b border-slate-200 dark:border-slate-700">
-              {/* Day header */}
+              {/* Day header - tappable to collapse/expand */}
               <div
-                className={`sticky top-0 z-10 px-4 py-3 text-sm uppercase tracking-wider ${
+                onClick={() => toggleDayCollapse(dayIndex)}
+                className={`sticky top-0 z-10 px-4 py-3 text-sm uppercase tracking-wider flex items-center justify-between cursor-pointer select-none ${
                   isToday
                     ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 font-bold'
                     : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold'
                 }`}
               >
-                {day}
-                {isToday && <span className="ml-2 text-xs font-normal">(Today)</span>}
+                <span>
+                  {day}
+                  {isToday && <span className="ml-2 text-xs font-normal">(Today)</span>}
+                </span>
+                {isCollapsed ? (
+                  <ChevronRight className="w-5 h-5" />
+                ) : (
+                  <ChevronDown className="w-5 h-5" />
+                )}
               </div>
 
-              {/* Hours for this day */}
+              {/* Hours for this day - hidden when collapsed */}
+              {!isCollapsed && (
               <div className="divide-y divide-slate-100 dark:divide-slate-700">
                 {HOURS.map(hour => {
                   const inCoverage = isCoverageHour(hour);
@@ -175,6 +207,7 @@ export const ScheduleGrid = ({
                   );
                 })}
               </div>
+              )}
             </div>
           );
         })}

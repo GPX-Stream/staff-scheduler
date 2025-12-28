@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useScheduleSync, useScheduleBlocks, useDragSelection, useStaffManager, useConfig } from './hooks';
 import { Header } from './components/Header';
 import { TimezoneSelector } from './components/TimezoneSelector';
@@ -6,7 +6,6 @@ import { StaffList } from './components/StaffList';
 import { ScheduleGrid } from './components/ScheduleGrid';
 import { CoverageSummary } from './components/CoverageSummary';
 import { AdminPanel } from './components/AdminPanel';
-import { exportToPDF } from './services/pdfExport';
 
 export default function StaffScheduler({ user, isAdmin, onLogout }) {
   // Non-admins can never edit
@@ -59,6 +58,7 @@ export default function StaffScheduler({ user, isAdmin, onLogout }) {
     selectedStaff,
     setSelectedStaff,
     hiddenStaff,
+    setHiddenStaff,
     hiddenRoles,
     hiddenGlobalRoles,
     displayTimezone,
@@ -91,10 +91,34 @@ export default function StaffScheduler({ user, isAdmin, onLogout }) {
     selectedRole,
   });
 
-  // Export handlers
-  const handleExportPDF = () => {
-    exportToPDF({ staff, blocks, displayTimezone, hiddenStaff, coverage: config.coverage, timezones: config.timezones });
-  };
+  // Find current user's staff ID
+  const currentUserStaffId = staff.find(s =>
+    s.id === user?.staffId ||
+    s.username === user?.username ||
+    s.name === user?.displayName
+  )?.id;
+
+  // Print handler - uses browser print with CSS media queries
+  const handlePrint = useCallback((exportMode = 'all') => {
+    if (exportMode === 'current' && currentUserStaffId) {
+      // "My Schedule Only" - temporarily hide all other staff
+      const previousHidden = new Set(hiddenStaff);
+      const hideOthers = new Set(staff.filter(s => s.id !== currentUserStaffId).map(s => s.id));
+      setHiddenStaff(hideOthers);
+
+      // Wait for re-render, then print, then restore
+      setTimeout(() => {
+        window.print();
+        // Restore after print dialog closes
+        setTimeout(() => {
+          setHiddenStaff(previousHidden);
+        }, 100);
+      }, 100);
+    } else {
+      // "All Users" - print what's currently visible
+      window.print();
+    }
+  }, [currentUserStaffId, hiddenStaff, staff, setHiddenStaff]);
 
   // Save handlers
   const handleSave = async () => {
@@ -156,7 +180,8 @@ export default function StaffScheduler({ user, isAdmin, onLogout }) {
           isEditMode={isEditMode && canEdit}
           setIsEditMode={canEdit ? setIsEditMode : undefined}
           onLogout={onLogout}
-          onExportPDF={handleExportPDF}
+          onExportPDF={handlePrint}
+          currentUserStaffId={currentUserStaffId}
           onSave={handleSave}
           onCancel={handleCancel}
           syncStatus={{ isOnline, isSaving, syncError, hasConflict, hasUnsavedChanges }}

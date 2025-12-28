@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Download, Edit3, Save, LogOut, User, X, Moon, Sun, Settings, Menu } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Printer, Edit3, Save, LogOut, User, X, Moon, Sun, Settings, Menu, ChevronDown, Users, UserCircle } from 'lucide-react';
 import { SyncStatus } from './SyncStatus';
 
 export const Header = ({
@@ -9,6 +9,7 @@ export const Header = ({
   setIsEditMode,
   onLogout,
   onExportPDF,
+  currentUserStaffId,
   onSave,
   onCancel,
   syncStatus,
@@ -17,6 +18,20 @@ export const Header = ({
   onOpenAdmin,
 }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef(null);
+
+  // Close export menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target)) {
+        setIsExportMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const closeDrawer = () => setIsDrawerOpen(false);
 
@@ -75,14 +90,66 @@ export const Header = ({
         </>
       )}
 
-      {/* Export Button */}
-      <button
-        onClick={isMobile ? withCloseDrawer(onExportPDF) : onExportPDF}
-        className={`flex items-center gap-2 px-4 py-2.5 md:py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 active:bg-slate-100 transition-colors ${isMobile ? 'w-full' : ''}`}
-      >
-        <Download className="w-4 h-4" />
-        Export PDF
-      </button>
+      {/* Print Button with Dropdown */}
+      {isMobile ? (
+        // Mobile: Show two separate buttons
+        <>
+          <button
+            onClick={withCloseDrawer(() => onExportPDF('all'))}
+            className="w-full flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 active:bg-slate-100 transition-colors"
+          >
+            <Users className="w-4 h-4" />
+            Print All Users
+          </button>
+          {currentUserStaffId && (
+            <button
+              onClick={withCloseDrawer(() => onExportPDF('current'))}
+              className="w-full flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 active:bg-slate-100 transition-colors"
+            >
+              <UserCircle className="w-4 h-4" />
+              Print My Schedule
+            </button>
+          )}
+        </>
+      ) : (
+        // Desktop: Dropdown menu
+        <div className="relative" ref={exportMenuRef}>
+          <button
+            onClick={() => setIsExportMenuOpen(prev => !prev)}
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 active:bg-slate-100 transition-colors"
+          >
+            <Printer className="w-4 h-4" />
+            Print
+            <ChevronDown className={`w-4 h-4 transition-transform ${isExportMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {isExportMenuOpen && (
+            <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-50">
+              <button
+                onClick={() => {
+                  onExportPDF('all');
+                  setIsExportMenuOpen(false);
+                }}
+                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-t-lg"
+              >
+                <Users className="w-4 h-4" />
+                All Users
+              </button>
+              {currentUserStaffId && (
+                <button
+                  onClick={() => {
+                    onExportPDF('current');
+                    setIsExportMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-b-lg"
+                >
+                  <UserCircle className="w-4 h-4" />
+                  My Schedule Only
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Admin Settings Button - Only show for admins */}
       {canEdit && onOpenAdmin && (

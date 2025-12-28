@@ -5,7 +5,7 @@ const API_BASE = '/api/auth';
 
 /**
  * Hook to manage user authentication with server-side validation
- * Uses sessionStorage so authentication clears when browser is closed
+ * Uses localStorage so authentication persists across browser sessions
  */
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -16,7 +16,7 @@ export const useAuth = () => {
   // Verify existing session on mount
   useEffect(() => {
     const verifySession = async () => {
-      const token = sessionStorage.getItem(TOKEN_KEY);
+      const token = localStorage.getItem(TOKEN_KEY);
 
       if (!token) {
         setLoading(false);
@@ -37,11 +37,11 @@ export const useAuth = () => {
           setUser(data.user);
         } else {
           // Invalid token, clear it
-          sessionStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(TOKEN_KEY);
         }
       } catch (err) {
         console.error('Session verification failed:', err);
-        sessionStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(TOKEN_KEY);
       } finally {
         setLoading(false);
       }
@@ -65,7 +65,7 @@ export const useAuth = () => {
       const data = await res.json();
 
       if (data.success && data.token && data.user) {
-        sessionStorage.setItem(TOKEN_KEY, data.token);
+        localStorage.setItem(TOKEN_KEY, data.token);
         setIsAuthenticated(true);
         setUser(data.user);
         return true;
@@ -81,10 +81,10 @@ export const useAuth = () => {
   }, []);
 
   const logout = useCallback(async () => {
-    const token = sessionStorage.getItem(TOKEN_KEY);
+    const token = localStorage.getItem(TOKEN_KEY);
 
     // Clear local state immediately
-    sessionStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(TOKEN_KEY);
     setIsAuthenticated(false);
     setUser(null);
 
@@ -118,7 +118,7 @@ export const useAuth = () => {
  * Get the auth token for API requests
  */
 export const getAuthToken = () => {
-  return sessionStorage.getItem(TOKEN_KEY);
+  return localStorage.getItem(TOKEN_KEY);
 };
 
 /**
