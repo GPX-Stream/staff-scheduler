@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { DEFAULT_BLOCKS } from '../data/defaultData';
 import { displayToUTC } from '../utils';
 
 /**
@@ -9,18 +8,26 @@ import { displayToUTC } from '../utils';
  * @returns {Object} Block operation handlers
  */
 export const useScheduleBlocks = (blocks, setBlocks) => {
-  const updateBlocks = useCallback((updates, displayOffset, isRemoving) => {
+  /**
+   * Update blocks with optional role assignment
+   * @param {Array} updates - Array of {staffId, dayIndex, hour}
+   * @param {string} displayTimezone - Current display timezone
+   * @param {boolean} isRemoving - Whether to remove blocks
+   * @param {string} [role] - Role to assign (if not provided, stores true for backwards compat)
+   */
+  const updateBlocks = useCallback((updates, displayTimezone, isRemoving, role) => {
     setBlocks(prevBlocks => {
       const newBlocks = { ...prevBlocks };
 
       updates.forEach(({ staffId, dayIndex, hour }) => {
-        const utcHour = displayToUTC(dayIndex, hour, displayOffset);
+        const utcHour = displayToUTC(dayIndex, hour, displayTimezone);
         const key = `${staffId}-${utcHour}`;
 
         if (isRemoving) {
           delete newBlocks[key];
         } else {
-          newBlocks[key] = true;
+          // Store role string if provided, otherwise true for backwards compatibility
+          newBlocks[key] = role || true;
         }
       });
 
@@ -44,10 +51,6 @@ export const useScheduleBlocks = (blocks, setBlocks) => {
     setBlocks({});
   }, [setBlocks]);
 
-  const resetToDefaults = useCallback(() => {
-    setBlocks(DEFAULT_BLOCKS);
-  }, [setBlocks]);
-
   const getStaffHours = useCallback((staffId) => {
     return Object.keys(blocks).filter(k => k.startsWith(`${staffId}-`)).length;
   }, [blocks]);
@@ -62,7 +65,6 @@ export const useScheduleBlocks = (blocks, setBlocks) => {
     updateBlocks,
     removeStaffBlocks,
     clearAll,
-    resetToDefaults,
     getStaffHours,
     hasBlock,
   };

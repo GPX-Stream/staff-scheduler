@@ -1,7 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { DEFAULT_STAFF } from '../data/defaultData';
-import { COLORS } from '../constants';
-import { getInitialTimezoneOffset } from '../utils';
+import { getInitialTimezone } from '../utils';
 
 /**
  * Hook to manage staff members
@@ -9,12 +7,16 @@ import { getInitialTimezoneOffset } from '../utils';
  * @param {Array} options.staff - Staff array from sync hook
  * @param {Function} options.setStaff - Setter for staff from sync hook
  * @param {Function} options.removeStaffBlocks - Function to remove blocks when staff is deleted
+ * @param {Array} options.colors - Available colors for staff members
+ * @param {Array} options.timezones - Available timezones
  * @returns {Object} Staff state and handlers
  */
-export const useStaffManager = ({ staff, setStaff, removeStaffBlocks }) => {
+export const useStaffManager = ({ staff, setStaff, removeStaffBlocks, colors, timezones }) => {
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [hiddenStaff, setHiddenStaff] = useState(new Set());
-  const [displayOffset, setDisplayOffset] = useState(() => getInitialTimezoneOffset());
+  const [hiddenRoles, setHiddenRoles] = useState(new Set()); // Set of "staffId-roleId" keys
+  const [hiddenGlobalRoles, setHiddenGlobalRoles] = useState(new Set()); // Set of roleIds (hides entire role)
+  const [displayTimezone, setDisplayTimezone] = useState(() => getInitialTimezone(timezones));
 
   // Initialize selectedStaff when staff loads
   useEffect(() => {
@@ -25,7 +27,7 @@ export const useStaffManager = ({ staff, setStaff, removeStaffBlocks }) => {
 
   const selectStaffMember = useCallback((member) => {
     setSelectedStaff(member);
-    setDisplayOffset(member.timezoneOffset);
+    setDisplayTimezone(member.timezone);
   }, []);
 
   const addStaff = useCallback((name) => {
@@ -34,8 +36,9 @@ export const useStaffManager = ({ staff, setStaff, removeStaffBlocks }) => {
     const newMember = {
       id: Date.now(),
       name: name.trim(),
-      color: COLORS[staff.length % COLORS.length],
-      timezoneOffset: displayOffset,
+      color: colors[staff.length % colors.length],
+      timezone: displayTimezone,
+      defaultRole: 'tier1', // Default new staff to Tier 1 support
     };
 
     setStaff(prev => [...prev, newMember]);
@@ -45,7 +48,7 @@ export const useStaffManager = ({ staff, setStaff, removeStaffBlocks }) => {
     }
 
     return newMember;
-  }, [staff.length, displayOffset, selectedStaff, setStaff, selectStaffMember]);
+  }, [staff.length, displayTimezone, selectedStaff, setStaff, selectStaffMember, colors]);
 
   const removeStaff = useCallback((id) => {
     setStaff(prev => prev.filter(s => s.id !== id));
@@ -61,14 +64,24 @@ export const useStaffManager = ({ staff, setStaff, removeStaffBlocks }) => {
     }
   }, [staff, selectedStaff, setStaff, removeStaffBlocks, selectStaffMember]);
 
-  const updateStaffTimezone = useCallback((id, newOffset) => {
+  const updateStaffTimezone = useCallback((id, newTimezone) => {
     setStaff(prev => prev.map(s =>
-      s.id === id ? { ...s, timezoneOffset: newOffset } : s
+      s.id === id ? { ...s, timezone: newTimezone } : s
     ));
 
     if (selectedStaff?.id === id) {
-      setSelectedStaff(prev => ({ ...prev, timezoneOffset: newOffset }));
-      setDisplayOffset(newOffset);
+      setSelectedStaff(prev => ({ ...prev, timezone: newTimezone }));
+      setDisplayTimezone(newTimezone);
+    }
+  }, [selectedStaff, setStaff]);
+
+  const updateStaffRole = useCallback((id, newRole) => {
+    setStaff(prev => prev.map(s =>
+      s.id === id ? { ...s, defaultRole: newRole } : s
+    ));
+
+    if (selectedStaff?.id === id) {
+      setSelectedStaff(prev => ({ ...prev, defaultRole: newRole }));
     }
   }, [selectedStaff, setStaff]);
 
@@ -77,6 +90,16 @@ export const useStaffManager = ({ staff, setStaff, removeStaffBlocks }) => {
       const next = new Set(prev);
       if (next.has(staffId)) {
         next.delete(staffId);
+        // Also clear any hidden roles for this staff member when re-enabling
+        setHiddenRoles(prevRoles => {
+          const nextRoles = new Set(prevRoles);
+          for (const key of prevRoles) {
+            if (key.startsWith(`${staffId}-`)) {
+              nextRoles.delete(key);
+            }
+          }
+          return nextRoles;
+        });
       } else {
         next.add(staffId);
       }
@@ -84,16 +107,36 @@ export const useStaffManager = ({ staff, setStaff, removeStaffBlocks }) => {
     });
   }, []);
 
-  const showAllStaff = useCallback(() => {
-    setHiddenStaff(new Set());
+  const toggleRoleVisibility = useCallback((staffId, roleId) => {
+    const key = `${staffId}-${roleId}`;
+    setHiddenRoles(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
   }, []);
 
-  const resetToDefaults = useCallback(() => {
-    setStaff(DEFAULT_STAFF);
-    setSelectedStaff(DEFAULT_STAFF[0] || null);
-    setDisplayOffset(getInitialTimezoneOffset());
+  const toggleGlobalRoleVisibility = useCallback((roleId) => {
+    setHiddenGlobalRoles(prev => {
+      const next = new Set(prev);
+      if (next.has(roleId)) {
+        next.delete(roleId);
+      } else {
+        next.add(roleId);
+      }
+      return next;
+    });
+  }, []);
+
+  const showAllStaff = useCallback(() => {
     setHiddenStaff(new Set());
-  }, [setStaff]);
+    setHiddenRoles(new Set());
+    setHiddenGlobalRoles(new Set());
+  }, []);
 
   return {
     staff,
@@ -101,13 +144,17 @@ export const useStaffManager = ({ staff, setStaff, removeStaffBlocks }) => {
     selectedStaff,
     setSelectedStaff: selectStaffMember,
     hiddenStaff,
-    displayOffset,
-    setDisplayOffset,
+    hiddenRoles,
+    hiddenGlobalRoles,
+    displayTimezone,
+    setDisplayTimezone,
     addStaff,
     removeStaff,
     updateStaffTimezone,
+    updateStaffRole,
     toggleStaffVisibility,
+    toggleRoleVisibility,
+    toggleGlobalRoleVisibility,
     showAllStaff,
-    resetToDefaults,
   };
 };

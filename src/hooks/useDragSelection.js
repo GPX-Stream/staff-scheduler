@@ -5,18 +5,20 @@ import { displayToUTC } from '../utils';
  * Hook to manage drag selection for the schedule grid
  * @param {Object} options - Hook options
  * @param {Object} options.selectedStaff - Currently selected staff member
- * @param {number} options.displayOffset - Current display timezone offset
+ * @param {string} options.displayTimezone - Current display IANA timezone ID
  * @param {Object} options.blocks - Current blocks state
  * @param {function} options.updateBlocks - Function to update blocks
  * @param {boolean} options.isEditMode - Whether edit mode is active
+ * @param {string} options.selectedRole - Role to assign to new blocks
  * @returns {Object} Drag state and handlers
  */
 export const useDragSelection = ({
   selectedStaff,
-  displayOffset,
+  displayTimezone,
   blocks,
   updateBlocks,
-  isEditMode
+  isEditMode,
+  selectedRole,
 }) => {
   const [dragStart, setDragStart] = useState(null);
   const [dragEnd, setDragEnd] = useState(null);
@@ -36,7 +38,7 @@ export const useDragSelection = ({
     const endHour = Math.max(dragStart.hour, dragEnd.hour);
 
     // Check if we're removing (if start cell already has this staff)
-    const startUTC = displayToUTC(dragStart.dayIndex, dragStart.hour, displayOffset);
+    const startUTC = displayToUTC(dragStart.dayIndex, dragStart.hour, displayTimezone);
     const startKey = `${selectedStaff.id}-${startUTC}`;
     const isRemoving = !!blocks[startKey];
 
@@ -47,12 +49,13 @@ export const useDragSelection = ({
       }
     }
 
-    updateBlocks(updates, displayOffset, isRemoving);
+    // Pass selectedRole when adding blocks (ignored when removing)
+    updateBlocks(updates, displayTimezone, isRemoving, isRemoving ? undefined : selectedRole);
 
     setIsDragging(false);
     setDragStart(null);
     setDragEnd(null);
-  }, [isDragging, dragStart, dragEnd, selectedStaff, displayOffset, blocks, updateBlocks]);
+  }, [isDragging, dragStart, dragEnd, selectedStaff, displayTimezone, blocks, updateBlocks, selectedRole]);
 
   useEffect(() => {
     const handleGlobalMouseUp = () => {

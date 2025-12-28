@@ -1,0 +1,58 @@
+{
+    "jeffs": {
+      "username": "jeffs",
+      "displayName": "Jeff Segal",
+      "passwordHash": "$2b$10$qxl8h4kVCtPJp2WfpFCbze4bdfbPPmScOGz.YQGMwYjC8JgRoWbya",
+      "role": "admin",
+      "createdAt": "2025-12-28T00:24:07.156Z",
+      "sessionToken": null
+    },
+    "andyi": {
+      "username": "andyi",
+      "displayName": "Andy Iancu",
+      "passwordHash": "$2b$10$tRNbb.ZNmV4N1U12M2V3OuhjQafIrnH/lVmiml.Zrsqw37g5nTlpe",
+      "role": "admin",
+      "createdAt": "2025-12-28T00:24:07.282Z",
+      "sessionToken": "d8fcd534478f437a12ffb4b6a1e8d5c595c737418cb16cd9407b3887ae97e053"
+    },
+    "alexxb": {
+      "username": "alexxb",
+      "displayName": "Alexx Branam",
+      "passwordHash": "$2b$10$ub0NePUJbVqa3dNODGBnFe1.eOODrEyWceWMpRU2BcXtYYEb2dIbm",
+      "role": "admin",
+      "createdAt": "2025-12-28T00:24:07.383Z",
+      "sessionToken": null
+    },
+    "daneb": {
+      "username": "daneb",
+      "displayName": "Dane Baird",
+      "passwordHash": "$2b$10$9jqVZG98c5eq8QGSpJlY5uQIbC/BpKYEdGCMwD941kSsHXK.zmj2S",
+      "role": "viewer",
+      "createdAt": "2025-12-28T00:24:07.488Z",
+      "sessionToken": null
+    },
+    "jinn": {
+      "username": "jinn",
+      "displayName": "Jin Nakamichi",
+      "passwordHash": "$2b$10$1mwHpuN1YM.yG6yRYT9pnOjJ/QgwcNR8omejVJ65BnHItfAXECv4u",
+      "role": "viewer",
+      "createdAt": "2025-12-28T00:24:07.590Z",
+      "sessionToken": null
+    },
+    "jaxonb": {
+      "username": "jaxonb",
+      "displayName": "Jaxon Bell",
+      "passwordHash": "$2b$10$l9xWH.CXCJzjkoSB0hapeOumHW4SQTG.FyM.vAkz1NfqVSnLbalRy",
+      "role": "viewer",
+      "createdAt": "2025-12-28T00:24:07.691Z",
+      "sessionToken": null
+    },
+    "gregc": {
+      "username": "gregc",
+      "displayName": "Greg Cinier",
+      "passwordHash": "$2b$10$wec3GSDZq03.erp/I3VI/.sKBPydNmRTfIEmUsd9OtdEmTx3hY9mW",
+      "role": "viewer",
+      "createdAt": "2025-12-28T00:24:07.790Z",
+      "sessionToken": null
+    }
+  }

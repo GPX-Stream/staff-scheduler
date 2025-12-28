@@ -1,5 +1,3 @@
-import { TIMEZONES } from '../constants';
-
 /**
  * Format hour as 12-hour time string
  * @param {number} hour - 0-23
@@ -13,11 +11,13 @@ export const formatHour = (hour) => {
 };
 
 /**
- * Get timezone label from offset
- * @param {number} offset - Timezone offset in hours
- * @returns {string} Timezone label or UTC offset string
+ * Get timezone label from IANA timezone ID
+ * @param {string} timezoneId - IANA timezone ID (e.g., 'America/New_York')
+ * @param {Array} timezones - Available timezones array (required)
+ * @returns {string} Timezone label or the ID itself if not found
  */
-export const getTimezoneLabel = (offset) => {
-  const tz = TIMEZONES.find(t => t.offset === offset);
-  return tz ? tz.label : `UTC${offset >= 0 ? '+' : ''}${offset}`;
+export const getTimezoneLabel = (timezoneId, timezones) => {
+  if (!timezones?.length) return timezoneId;
+  const tz = timezones.find(t => t.id === timezoneId);
+  return tz ? tz.label : timezoneId;
 };

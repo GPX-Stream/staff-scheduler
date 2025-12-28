@@ -1,12 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { scheduleApi, ConflictError } from '../services/api';
-import { DEFAULT_STAFF, DEFAULT_BLOCKS } from '../data/defaultData';
 
 const POLL_INTERVAL = 5 * 60 * 1000; // 5 minutes
-const STORAGE_KEYS = {
-  STAFF: 'staff-scheduler-staff',
-  BLOCKS: 'staff-scheduler-blocks',
-};
 
 export const useScheduleSync = () => {
   // Core state
@@ -31,28 +26,6 @@ export const useScheduleSync = () => {
     latestVersionRef.current = version;
   }, [version]);
 
-  // localStorage functions
-  const loadFromLocalStorage = useCallback(() => {
-    try {
-      const storedStaff = localStorage.getItem(STORAGE_KEYS.STAFF);
-      const storedBlocks = localStorage.getItem(STORAGE_KEYS.BLOCKS);
-      setStaffLocal(storedStaff ? JSON.parse(storedStaff) : DEFAULT_STAFF);
-      setBlocksLocal(storedBlocks ? JSON.parse(storedBlocks) : DEFAULT_BLOCKS);
-    } catch {
-      setStaffLocal(DEFAULT_STAFF);
-      setBlocksLocal(DEFAULT_BLOCKS);
-    }
-  }, []);
-
-  const saveToLocalStorage = useCallback((s, b) => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(s));
-      localStorage.setItem(STORAGE_KEYS.BLOCKS, JSON.stringify(b));
-    } catch (e) {
-      console.error('localStorage save failed:', e);
-    }
-  }, []);
-
   // Save to server
   const save = useCallback(async () => {
     setIsSaving(true);
@@ -62,10 +35,6 @@ export const useScheduleSync = () => {
       setSyncError(null);
       setHasConflict(false);
       setHasUnsavedChanges(false);
-
-      // Also save to localStorage as backup
-      saveToLocalStorage(staff, blocks);
-
       return { success: true };
     } catch (error) {
       if (error instanceof ConflictError) {
@@ -73,47 +42,23 @@ export const useScheduleSync = () => {
         setSyncError('Another user modified the schedule. Please refresh.');
       } else {
         setSyncError(error.message);
-        // Save locally as fallback
-        saveToLocalStorage(staff, blocks);
       }
       return { success: false, error: error.message };
     } finally {
       setIsSaving(false);
     }
-  }, [staff, blocks, version, saveToLocalStorage]);
+  }, [staff, blocks, version]);
 
   // Wrapped setters that track unsaved changes
   const setStaff = useCallback((updater) => {
-    setStaffLocal(prev => {
-      const newStaff = typeof updater === 'function' ? updater(prev) : updater;
-      return newStaff;
-    });
+    setStaffLocal(prev => typeof updater === 'function' ? updater(prev) : updater);
     setHasUnsavedChanges(true);
-    // Save to localStorage immediately for local persistence
-    setStaffLocal(current => {
-      setBlocksLocal(currentBlocks => {
-        saveToLocalStorage(current, currentBlocks);
-        return currentBlocks;
-      });
-      return current;
-    });
-  }, [saveToLocalStorage]);
+  }, []);
 
   const setBlocks = useCallback((updater) => {
-    setBlocksLocal(prev => {
-      const newBlocks = typeof updater === 'function' ? updater(prev) : updater;
-      return newBlocks;
-    });
+    setBlocksLocal(prev => typeof updater === 'function' ? updater(prev) : updater);
     setHasUnsavedChanges(true);
-    // Save to localStorage immediately for local persistence
-    setBlocksLocal(current => {
-      setStaffLocal(currentStaff => {
-        saveToLocalStorage(currentStaff, current);
-        return currentStaff;
-      });
-      return current;
-    });
-  }, [saveToLocalStorage]);
+  }, []);
 
   // Fetch schedule from server
   const fetchSchedule = useCallback(async () => {
@@ -121,42 +66,19 @@ export const useScheduleSync = () => {
       setIsLoading(true);
       const data = await scheduleApi.getSchedule();
 
-      if (data.staff.length === 0) {
-        // Check if we have local data to migrate
-        const localStaff = localStorage.getItem(STORAGE_KEYS.STAFF);
-        if (localStaff) {
-          const parsedStaff = JSON.parse(localStaff);
-          const parsedBlocks = JSON.parse(localStorage.getItem(STORAGE_KEYS.BLOCKS) || '{}');
-          if (parsedStaff.length > 0) {
-            setStaffLocal(parsedStaff);
-            setBlocksLocal(parsedBlocks);
-            setHasUnsavedChanges(true);
-            setIsLoading(false);
-            setSyncError(null);
-            return;
-          }
-        }
-        // No local data, use defaults
-        setStaffLocal(DEFAULT_STAFF);
-        setBlocksLocal(DEFAULT_BLOCKS);
-        setHasUnsavedChanges(true);
-      } else {
-        setStaffLocal(data.staff);
-        setBlocksLocal(data.blocks);
-        setVersion(data.version);
-        saveToLocalStorage(data.staff, data.blocks);
-        setHasUnsavedChanges(false);
-      }
-
+      setStaffLocal(data.staff || []);
+      setBlocksLocal(data.blocks || {});
+      setVersion(data.version || 0);
+      setHasUnsavedChanges(false);
       setSyncError(null);
     } catch (error) {
       setSyncError(error.message);
-      loadFromLocalStorage();
-      setHasUnsavedChanges(false);
+      setStaffLocal([]);
+      setBlocksLocal({});
     } finally {
       setIsLoading(false);
     }
-  }, [loadFromLocalStorage, saveToLocalStorage]);
+  }, []);
 
   // Refs for polling conditions (to avoid recreating startPolling)
   const isOnlineRef = useRef(isOnline);
@@ -182,13 +104,12 @@ export const useScheduleSync = () => {
           setStaffLocal(data.staff);
           setBlocksLocal(data.blocks);
           setVersion(data.version);
-          saveToLocalStorage(data.staff, data.blocks);
         }
       } catch {
         // Silent fail for polling
       }
     }, POLL_INTERVAL);
-  }, [saveToLocalStorage]);
+  }, []);
 
   const stopPolling = useCallback(() => {
     if (pollIntervalRef.current) {
@@ -196,12 +117,20 @@ export const useScheduleSync = () => {
     }
   }, []);
 
-  // Refresh handler for conflict resolution
+  // Refresh handler for conflict resolution / cancel (does NOT show loading spinner)
   const refreshFromServer = useCallback(async () => {
-    await fetchSchedule();
-    setHasConflict(false);
-    setHasUnsavedChanges(false);
-  }, [fetchSchedule]);
+    try {
+      const data = await scheduleApi.getSchedule();
+      setStaffLocal(data.staff || []);
+      setBlocksLocal(data.blocks || {});
+      setVersion(data.version || 0);
+      setHasConflict(false);
+      setHasUnsavedChanges(false);
+      setSyncError(null);
+    } catch (error) {
+      setSyncError(error.message);
+    }
+  }, []);
 
   // Refs for initialization callbacks (to avoid re-running on every change)
   const fetchScheduleRef = useRef(fetchSchedule);

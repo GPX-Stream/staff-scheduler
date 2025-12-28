@@ -6,19 +6,12 @@ export const SyncStatus = ({
   syncError,
   hasConflict,
   hasUnsavedChanges,
-  onRefresh,
 }) => {
   if (hasConflict) {
     return (
       <div className="flex items-center gap-2 text-amber-600">
         <AlertTriangle className="w-4 h-4" />
-        <span className="text-sm">Conflict</span>
-        <button
-          onClick={onRefresh}
-          className="text-sm underline hover:no-underline"
-        >
-          Refresh
-        </button>
+        <span className="text-sm">Conflict - use Cancel to reload</span>
       </div>
     );
   }

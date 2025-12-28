@@ -1,5 +1,4 @@
-import { Download, Edit3, Eye, Upload, RotateCcw, Save, LogOut, User } from 'lucide-react';
-import { useRef } from 'react';
+import { Download, Edit3, Save, LogOut, User, X, Moon, Sun } from 'lucide-react';
 import { SyncStatus } from './SyncStatus';
 
 export const Header = ({
@@ -9,30 +8,19 @@ export const Header = ({
   setIsEditMode,
   onLogout,
   onExportPDF,
-  onExportJSON,
-  onImportJSON,
-  onResetToDefaults,
   onSave,
-  onSaveAndExit,
+  onCancel,
   syncStatus,
-  onRefresh,
+  darkMode,
+  onToggleDarkMode,
 }) => {
-  const fileInputRef = useRef(null);
-
-  const handleFileSelect = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onImportJSON(file);
-      e.target.value = '';
-    }
-  };
 
   return (
     <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div className="flex items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 mb-1">Staff Schedule Planner</h1>
-          <p className="text-slate-500 text-sm">Plan your weekly staff coverage across time zones</p>
+        <div className="flex flex-col justify-center">
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Staff Schedule Planner</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Plan your weekly staff coverage across time zones</p>
         </div>
         {syncStatus && (
           <SyncStatus
@@ -41,40 +29,35 @@ export const Header = ({
             syncError={syncStatus.syncError}
             hasConflict={syncStatus.hasConflict}
             hasUnsavedChanges={syncStatus.hasUnsavedChanges}
-            onRefresh={onRefresh}
           />
         )}
       </div>
       <div className="flex gap-2 flex-wrap items-center">
         {/* User info */}
         {user && (
-          <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 rounded-lg text-sm text-slate-600">
+          <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-sm text-slate-600 dark:text-slate-300">
             <User className="w-4 h-4" />
             <span>{user.displayName}</span>
             {user.role === 'admin' && (
-              <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded font-medium">
+              <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded font-medium">
                 Admin
               </span>
             )}
           </div>
         )}
 
-        {/* Edit Mode Toggle - Only show for admins */}
-        {canEdit && setIsEditMode && (
+        {/* Edit/Save Button - Only show for admins */}
+        {canEdit && setIsEditMode && !isEditMode && (
           <button
-            onClick={() => setIsEditMode(!isEditMode)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              isEditMode
-                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-            }`}
+            onClick={() => setIsEditMode(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors"
           >
-            {isEditMode ? <Edit3 className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            {isEditMode ? 'Editing' : 'View Only'}
+            <Edit3 className="w-4 h-4" />
+            Edit
           </button>
         )}
 
-        {/* Save Buttons - Only show in edit mode for admins */}
+        {/* Save & Cancel Buttons - Only show in edit mode for admins */}
         {isEditMode && canEdit && (
           <>
             <button
@@ -86,61 +69,39 @@ export const Header = ({
               {syncStatus?.isSaving ? 'Saving...' : 'Save'}
             </button>
             <button
-              onClick={onSaveAndExit}
+              onClick={onCancel}
               disabled={syncStatus?.isSaving}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-red-50 hover:text-red-600 hover:border-red-200 dark:hover:bg-red-900/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Save className="w-4 h-4" />
-              {syncStatus?.isSaving ? 'Saving...' : 'Save & Exit'}
+              <X className="w-4 h-4" />
+              Cancel
             </button>
           </>
         )}
 
-        {/* Export/Import Buttons */}
+        {/* Export Button */}
         <button
           onClick={onExportPDF}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
         >
           <Download className="w-4 h-4" />
           PDF
         </button>
 
+        {/* Dark Mode Toggle */}
         <button
-          onClick={onExportJSON}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+          onClick={onToggleDarkMode}
+          className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+          title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
         >
-          <Download className="w-4 h-4" />
-          JSON
-        </button>
-
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileSelect}
-          accept=".json"
-          className="hidden"
-        />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
-        >
-          <Upload className="w-4 h-4" />
-          Import
-        </button>
-
-        <button
-          onClick={onResetToDefaults}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-amber-600 hover:bg-amber-50 transition-colors"
-        >
-          <RotateCcw className="w-4 h-4" />
-          Reset
+          {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </button>
 
         {/* Logout Button */}
         {onLogout && (
           <button
             onClick={onLogout}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-red-50 hover:text-red-600 hover:border-red-200 dark:hover:bg-red-900/30 transition-colors"
           >
             <LogOut className="w-4 h-4" />
             Logout
